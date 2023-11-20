@@ -1,0 +1,43 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const puzzleContainer = document.getElementById('puzzle-container');
+    const assignmentContainer = document.getElementById('assignment-container');
+
+    const puzzle = "SEND + MORE = MONEY";
+    const variables = Array.from(new Set(puzzle.match(/[A-Z]/g)));
+    const assignments = Object.fromEntries(variables.map(variable => [variable, null]));
+
+    displayPuzzle(puzzleContainer, puzzle);
+    displayAssignments(assignmentContainer, assignments);
+});
+
+function displayPuzzle(container, puzzle) {
+    container.innerHTML = `<p>${puzzle}</p>`;
+}
+
+function displayAssignments(container, assignments) {
+    container.innerHTML = "<p>Assignments:</p>";
+    for (const [variable, digit] of Object.entries(assignments)) {
+        const assignmentStr = `${variable}: ${digit !== null ? digit : '_'}`;
+        container.innerHTML += `<p>${assignmentStr}</p>`;
+    }
+}
+
+function solvePuzzle() {
+    // Send puzzle and current assignments to the server for solving
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/solve', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+
+    const puzzle = "SEND + MORE = MONEY";
+    const variables = Array.from(new Set(puzzle.match(/[A-Z]/g)));
+    const assignments = Object.fromEntries(variables.map(variable => [variable, null]));
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const solvedAssignments = JSON.parse(xhr.responseText);
+            displayAssignments(document.getElementById('assignment-container'), solvedAssignments);
+        }
+    };
+
+    xhr.send(JSON.stringify({ puzzle, assignments }));
+}
